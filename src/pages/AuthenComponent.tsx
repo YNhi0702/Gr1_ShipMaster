@@ -28,7 +28,7 @@ const AuthenComponent: React.FC = () => {
 
                 <div
                     className="w-full md:w-1/2 p-6 sm:p-10"
-                    style={{ height: '75vh', transition: 'min-height 0.3s ease' }}
+                    style={{ minHeight: '75vh', transition: 'min-height 0.3s ease' }}
                 >
                     <Title level={3} className="text-center mb-6 font-semibold">
                         Ship <span className="text-blue-600">Master</span>

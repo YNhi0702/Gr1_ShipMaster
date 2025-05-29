@@ -27,7 +27,7 @@ const Register: React.FC = () => {
                 uid: user.uid,
                 email: values.email,
                 phone: values.phone,
-                username: values.email.split('@')[0], // hoặc theo ý bạn
+                username: values.email.split('@')[0],
                 role: 'customer',
                 createdAt: new Date().toISOString(),
             });
