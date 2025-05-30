@@ -32,14 +32,14 @@ const App: React.FC = () => {
                            <CreateOrder />
                        </PrivateRoute>} />
 
-            <Route
+            {/*<Route
               path="/officer"
               element={
                 <PrivateRoute allowedRoles={['officer', 'inspector', 'accountant']}>
-                {/*    something */}
+                // somethingsomething
                 </PrivateRoute>
               }
-          />
+          />     */}
         </Routes>
       </Router>
   );

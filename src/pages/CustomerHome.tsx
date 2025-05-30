@@ -14,7 +14,7 @@ const CustomerHome: React.FC = () => {
     const [orders, setOrders] = useState<any[]>([]);
     const [loadingUser, setLoadingUser] = useState(true);
     const [loadingOrders, setLoadingOrders] = useState(true);
-
+    //lấy dữ liệu
     useEffect(() => {
         const fetchData = async () => {
             const uid = sessionStorage.getItem('uid');

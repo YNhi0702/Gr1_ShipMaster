@@ -14,7 +14,7 @@ interface RegisterFormValues {
 
 const Register: React.FC = () => {
     const [loading, setLoading] = useState(false);
-
+    //Xử lí submit
     const onFinish = async (values: RegisterFormValues) => {
         setLoading(true);
         try {
@@ -42,7 +42,7 @@ const Register: React.FC = () => {
             });
 
             message.success('Đăng ký thành công!');
-        } catch (error: any) {
+        } catch (error: any) { //hiển thị lỗilỗi
             message.error(error.message);
         } finally {
             setLoading(false);

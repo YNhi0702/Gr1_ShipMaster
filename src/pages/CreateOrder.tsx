@@ -27,7 +27,7 @@ const CreateOrder: React.FC = () => {
     const [uploading, setUploading] = useState(false);
     const [loading, setLoading] = useState(false);
     const [selectedShipId, setSelectedShipId] = useState<string | null>(null);
-
+    //Lấy dữ liệu
     useEffect(() => {
         const fetchData = async () => {
             const uid = sessionStorage.getItem('uid');
@@ -71,7 +71,7 @@ const CreateOrder: React.FC = () => {
             const imageUrls: { [key: string]: string } = {};
             for (let i = 0; i < fileList.length; i++) {
                 const file = fileList[i].originFileObj;
-                const storageRef = ref(storage, `repairOrders/${uid}/${Date.now()}_${file.name}`);
+                const storageRef = ref(storage, `repairOrders/${uid}/${Date.now()}_${file.name}`);// Tạo đường dẫn lưu ảnh
                 await uploadBytes(storageRef, file);
                 const url = await getDownloadURL(storageRef);// lấy URL file vừa upload
                 imageUrls[`img${i + 1}`] = url;
@@ -97,7 +97,7 @@ const CreateOrder: React.FC = () => {
                         uid,
                     });
                     console.log("Tạo ship thành công:", shipDoc.id);
-                    shipId = shipDoc.id;
+                    shipId = shipDoc.id;// Gán lại ID vừa tạo
                 } catch (e) {
                     console.error("Lỗi khi tạo ship:", e);
                 }

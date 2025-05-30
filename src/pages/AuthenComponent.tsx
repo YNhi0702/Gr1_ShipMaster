@@ -34,7 +34,7 @@ const AuthenComponent: React.FC = () => {
                         Ship <span className="text-blue-600">Master</span>
                     </Title>
 
-                    <Tabs defaultActiveKey="login" size="large" centered>
+                    <Tabs defaultActiveKey="login" size="large" centered>{/* Tabs chuyển giữa Login và Register */}
                         <TabPane tab="Đăng nhập" key="login">
                             <Login />
                         </TabPane>

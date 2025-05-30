@@ -17,10 +17,10 @@ const OrderDetail: React.FC = () => {
     const [shipName, setShipName] = useState('');
     const [workshopName, setWorkshopName] = useState('');
     const [employeeName, setEmployeeName] = useState('');
-
+    //Lấy dữ liệu 
     useEffect(() => {
         const fetchOrder = async () => {
-            if (!state && id) {
+            if (!state && id) { /*Chưa có state truyền*/
                 try {
                     setLoading(true);
                     const orderRef = doc(db, 'repairOrder', id);
