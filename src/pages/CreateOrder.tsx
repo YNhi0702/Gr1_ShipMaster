@@ -37,14 +37,15 @@ const CreateOrder: React.FC = () => {
             }
 
             try {
+                //Truy vấn tàu 
                 const shipQuery = query(collection(db, 'ship'), where('uid', '==', uid));
                 const shipSnapshot = await getDocs(shipQuery);
                 const shipData = shipSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
+                //Truy vấn xưởngxưởng
                 const workshopQuery = query(collection(db, 'workShop'), where('status', '==', 'còn trống'));
                 const workshopSnapshot = await getDocs(workshopQuery);
                 const workshopData = workshopSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
+                //Cập nhật state
                 setShips(shipData);
                 setWorkshops(workshopData);
             } catch (error) {
@@ -56,14 +57,13 @@ const CreateOrder: React.FC = () => {
 
         fetchData();
     }, [navigate]);
-
+    //Xử lí tạo đơn 
     const handleUpload = async () => {
         const uid = sessionStorage.getItem('uid');
         if (!uid) {
             message.error('Người dùng chưa đăng nhập.');
             return;
         }
-
         try {
             const values = await form.validateFields();
             setUploading(true);
@@ -73,12 +73,13 @@ const CreateOrder: React.FC = () => {
                 const file = fileList[i].originFileObj;
                 const storageRef = ref(storage, `repairOrders/${uid}/${Date.now()}_${file.name}`);
                 await uploadBytes(storageRef, file);
-                const url = await getDownloadURL(storageRef);
+                const url = await getDownloadURL(storageRef);// lấy URL file vừa upload
                 imageUrls[`img${i + 1}`] = url;
             }
 
             let shipId = selectedShipId;
-            if (!shipId) {
+            if (!shipId) // nếu chưa chọn tàu cũ thì tạo tàu mới   
+            {
                 try {
                     console.log("Tạo ship");
                     const shipDoc = await addDoc(collection(db, 'ship'), {
@@ -102,7 +103,7 @@ const CreateOrder: React.FC = () => {
                 }
 
             }
-
+            // tạo đơn sửa chữa mới
             await addDoc(collection(db, 'repairOrder'), {
                 StartDate: Timestamp.now(),
                 Status: 'Chờ giám định',
@@ -124,13 +125,13 @@ const CreateOrder: React.FC = () => {
             setUploading(false);
         }
     };
-
+    // xử lý giá trị trả về từ Upload để lấy fileList
     const normFile = (e: any) => {
         if (Array.isArray(e)) return e;
         return e && e.fileList;
     };
 
-    const isReadOnly = selectedShipId !== null;
+    const isReadOnly = selectedShipId !== null;// nếu đã chọn tàu cũ thì không cho sửa input
 
     if (loading) {
         return <div className="p-6"><Spin /> Đang tải dữ liệu...</div>;
