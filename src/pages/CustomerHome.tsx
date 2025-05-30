@@ -2,61 +2,75 @@ import React, { useEffect, useState } from 'react';
 import { Layout, Button, Table, Typography, Avatar, Spin } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
 
-const mockOrders = [
-    {
-        id: 'D001',
-        createdAt: '2025-05-28',
-        status: 'Đang xử lý',
-        lastUpdate: '2025-05-29',
-    },
-    {
-        id: 'D002',
-        createdAt: '2025-05-20',
-        status: 'Hoàn thành',
-        lastUpdate: '2025-05-25',
-    },
-];
-
 const CustomerHome: React.FC = () => {
     const navigate = useNavigate();
-    const [userName, setUserName] = useState<string>(''); // để lưu fullName lấy từ Firestore
-    const [loadingUser, setLoadingUser] = useState<boolean>(true);
+    const [userName, setUserName] = useState('');
+    const [orders, setOrders] = useState<any[]>([]);
+    const [loadingUser, setLoadingUser] = useState(true);
+    const [loadingOrders, setLoadingOrders] = useState(true);
 
     useEffect(() => {
-        const fetchUserData = async () => {
+        const fetchData = async () => {
+            const uid = sessionStorage.getItem('uid');
+            if (!uid) {
+                navigate('/login');
+                return;
+            }
+
             try {
-                const uid = sessionStorage.getItem('uid');
-                if (!uid) {
-                    navigate('/login');
-                    return;
-                }
-                console.log(uid);
-
+                // Lấy thông tin khách hàng
                 const customersRef = collection(db, 'customers');
-                const q = query(customersRef, where('uid', '==', uid));
-                const querySnapshot = await getDocs(q);
-
-                if (querySnapshot.empty) {
-                    setUserName('Khách hàng');
-                } else {
-                    const customerData = querySnapshot.docs[0].data();
-                    setUserName(customerData.fullName || 'Khách hàng');
+                const customerQuery = query(customersRef, where('uid', '==', uid));
+                const customerSnapshot = await getDocs(customerQuery);
+                if (!customerSnapshot.empty) {
+                    setUserName(customerSnapshot.docs[0].data().fullName || 'Khách hàng');
                 }
+
+                // Lấy danh sách đơn sửa chữa
+                const ordersRef = collection(db, 'repairOrder');
+                const ordersQuery = query(ordersRef, where('uid', '==', uid));
+                const ordersSnapshot = await getDocs(ordersQuery);
+
+                const ordersData = await Promise.all(
+                    ordersSnapshot.docs.map(async (docSnap) => {
+                        const order = docSnap.data();
+                        const createdAt = order.StartDate?.toDate().toLocaleDateString('vi-VN');
+                        let shipName = 'Không xác định';
+
+                        try {
+                            const shipSnap = await getDoc(doc(db, 'ship', order.shipId));
+                            if (shipSnap.exists()) {
+                                shipName = shipSnap.data().name || shipName;
+                            }
+                        } catch (err) {
+                            console.warn('Không thể lấy tên tàu:', order.shipId);
+                        }
+
+                        return {
+                            id: docSnap.id,
+                            ...order,
+                            createdAt,
+                            shipName,
+                        };
+                    })
+                );
+
+                setOrders(ordersData);
             } catch (error) {
-                console.error('Lỗi lấy thông tin khách hàng:', error);
-                setUserName('Khách hàng');
+                console.error('Lỗi khi tải dữ liệu:', error);
             } finally {
                 setLoadingUser(false);
+                setLoadingOrders(false);
             }
         };
 
-        fetchUserData();
+        fetchData();
     }, [navigate]);
 
     const columns = [
@@ -71,20 +85,20 @@ const CustomerHome: React.FC = () => {
             key: 'createdAt',
         },
         {
+            title: 'Tàu',
+            dataIndex: 'shipName',
+            key: 'shipName',
+        },
+        {
             title: 'Trạng thái',
-            dataIndex: 'status',
-            key: 'status',
+            dataIndex: 'Status',
+            key: 'Status',
             render: (status: string) => {
                 let color = 'text-blue-600';
                 if (status === 'Hoàn thành') color = 'text-green-600 font-semibold';
-                else if (status === 'Đang xử lý') color = 'text-yellow-600 font-semibold';
+                else if (status === 'Đang giám định') color = 'text-yellow-600 font-semibold';
                 return <span className={color}>{status}</span>;
             },
-        },
-        {
-            title: 'Cập nhật cuối',
-            dataIndex: 'lastUpdate',
-            key: 'lastUpdate',
         },
         {
             title: 'Hành động',
@@ -92,8 +106,8 @@ const CustomerHome: React.FC = () => {
             render: (_: any, record: any) => (
                 <Button
                     type="link"
-                    onClick={() => alert(`Xem chi tiết đơn ${record.id}`)}
                     className="!p-0 !text-blue-600 hover:underline"
+                    onClick={() => navigate(`/orders/${record.id}`, { state: record })}
                 >
                     Xem chi tiết
                 </Button>
@@ -118,16 +132,16 @@ const CustomerHome: React.FC = () => {
                     type="primary"
                     size="large"
                     className="mb-5 bg-blue-600 hover:bg-blue-700 border-none"
-                    onClick={() => navigate('/create')}
+                    onClick={() => navigate('/createRepairOder')}
                 >
                     Tạo đơn sửa chữa mới
                 </Button>
                 <Title level={4}>Danh sách đơn sửa chữa</Title>
                 <Table
                     columns={columns}
-                    dataSource={mockOrders}
+                    dataSource={orders}
                     rowKey="id"
-                    pagination={false}
+                    loading={loadingOrders}
                     bordered
                     className="shadow-sm"
                 />

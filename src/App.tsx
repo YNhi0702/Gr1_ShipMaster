@@ -4,6 +4,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import PrivateRoute from './routes/PrivateRoute';
 import AuthenComponent from "./pages/AuthenComponent";
 import CustomerHome from "./pages/CustomerHome";
+import OrderDetail from "./pages/OrderDetail";
+import CreateOrder from "./pages/CreateOrder";
 
 const App: React.FC = () => {
   return (
@@ -19,8 +21,18 @@ const App: React.FC = () => {
                 </PrivateRoute>
               }
           />
+            <Route path="/orders/:id"
+                   element={
+                <PrivateRoute allowedRoles={['customer']}>
+                    <OrderDetail />
+                </PrivateRoute>} />
+            <Route path="/createRepairOder"
+                   element={
+                       <PrivateRoute allowedRoles={['customer']}>
+                           <CreateOrder />
+                       </PrivateRoute>} />
 
-          <Route
+            <Route
               path="/officer"
               element={
                 <PrivateRoute allowedRoles={['officer', 'inspector', 'accountant']}>
